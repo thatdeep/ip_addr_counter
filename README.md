@@ -1,7 +1,5 @@
 # Unique IP Counter
 
-This project contains various implementations for counting unique IP addresses from large files. The primary goal is to achieve efficient memory usage and processing speed.
-
 ## Implementations
 
 ### 1. `UniqueIPCounter.java`
