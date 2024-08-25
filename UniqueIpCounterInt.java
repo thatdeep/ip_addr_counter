@@ -6,7 +6,7 @@ import java.util.HashSet;
 public class UniqueIPCounterInt {
 
     public static void main(String[] args) {
-        String filePath = "ip_addresses_short.txt";
+        String filePath = "ip_addresses.txt";
         HashSet<Integer> uniqueIPs = new HashSet<>();
 
         try (BufferedReader br = new BufferedReader(new FileReader(filePath))) {

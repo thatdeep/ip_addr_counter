@@ -5,7 +5,7 @@ import java.io.IOException;
 public class UniqueIPCounterBitArray {
 
     public static void main(String[] args) {
-        String filePath = "ip_addresses_short.txt";
+        String filePath = "ip_addresses.txt";
 
         // Create a byte array to hold 2^32 bits (537 MB)
         byte[] bitArray = new byte[(int) Math.pow(2, 29)];
