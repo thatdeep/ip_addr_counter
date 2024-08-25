@@ -1,23 +1,35 @@
-UniqueIPCounter.java
+# Unique IP Counter
 
-basic hashset line counting, OOM very fast
+This project contains various implementations for counting unique IP addresses from large files. The primary goal is to achieve efficient memory usage and processing speed.
 
-UniqueIpCounterInt.java
+## Implementations
 
-same hashset counting, but each ip is encoded as int32 value uniquely. Still OOM hard.
+### 1. `UniqueIPCounter.java`
+- **Description**: Basic implementation using a `HashSet` to count unique IPs.
+- **Performance**: Quickly runs out of memory (OOM) when handling large files.
 
-UniqueIpCounterBitArray.java
+### 2. `UniqueIpCounterInt.java`
+- **Description**: Similar to the previous implementation, but each IP is uniquely encoded as an `int32` value.
+- **Performance**: Still encounters OOM issues with large files.
 
-There are 2^32 unique IP values, and file is large so we can expect large portion of whole int32 range present. Best we can do in terms of memory is storing presence of each address in its own flag. This leads to 2^32 elements bitmask array, which translates to 2^29 bytes (~537MB array). Rest is straightforward: read lines, make integers, set bits at corresponding bit indices. Speed was around 220 sec per 14 GB partial file.
+### 3. `UniqueIpCounterBitArray.java`
+- **Description**: 
+  - There are 2^32 possible unique IP values. Given the large file size, we expect a significant portion of the int32 range to be present.
+  - The most memory-efficient approach is to store the presence of each address in its own flag (bit).
+  - This results in a bitmask array of 2^32 elements, equivalent to 2^29 bytes (~537MB).
+  - The process involves reading lines, converting them to integers, and setting bits at corresponding bit indices.
+- **Performance**: Achieved a processing speed of around 220 seconds for a 14 GB partial file.
 
-UniqueIPCounterBitArrayParallel.java
+### 4. `UniqueIPCounterBitArrayParallel.java`
+- **Description**: Inspired by the [1 billion row challenge blog post](https://questdb.io/blog/billion-row-challenge-step-by-step/) and their code for parallel file reading/processing in chunks.
+  
+  - **Concept**:
+    1. Treat the file as a contiguous memory segment and calculate fixed chunk starting and ending offsets.
+    2. The bitmask is shared among threads. Concurrent access is managed by dividing the bitmask into 256 `AtomicIntegerArray` segments, indexed by the first part of the IP address. This reduces the likelihood of concurrent access to the same segment, as the segments have non-overlapping index spaces.
+    3. Each thread parses its lines within its chunk, converts them to a global bitmask index, determines the segment and segment index, and performs atomic read-modify-update operations until successful.
+    4. The final step is to aggregate the count of bits set to 1, which corresponds to the total number of unique IP addresses.
 
-{/strikethrough}{stole from}inspired by 1 billion row challenge blogpost https://questdb.io/blog/billion-row-challenge-step-by-step/ and their code for parallel file reading/processing in chunks.
-
-Basically:
-1) view file as contiguous memory segment, compute and fix chunks starting and ending offsets.
-2) bitmask is shared between threads. Concurrent access is achieved with looking at bitmask as 256 AtomicIntegerArray segments, segments indexed by first subaddress part. This way probability of concurrent access to the same AtomicIntegerArray is reduced as segments have non-overlapping indices spaces.
-3) each thread parse its lines within chunk, converts them to global bitmask index, then determine segment and segment index from it. Then repeat atomic read-modify-update thing until success.
-4) Aggregate count of bits set to 1, which will correspond to total unique ip addresses.
-
-Results: 1 billion unique addresses for a given test file, were computed on macbook air M1 within 140-160s, which feels quite good for a 114GB file. Used jdk22 to use those fancy java.lang.foreign things
+- **Results**: 
+  - Successfully computed 1 billion unique addresses from a test file.
+  - Processing time on a MacBook Air M1 was between 140-160 seconds for a 114GB file.
+  - Utilized JDK 22 to leverage advanced `java.lang.foreign` features.
